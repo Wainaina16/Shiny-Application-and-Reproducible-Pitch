@@ -1,0 +1,75 @@
+---
+title: "Shiny Application and Reproducible Pitch"
+author: "Andrew Wainaina"
+date: "11/24/2020"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Introduction
+
+The objective of this project is to create and deploy a shiny app. As part of this, I have created a shiny app and deployed it on the shiny server. The link is https://wainaina1687.shinyapps.io/ShinyApp/.
+
+## Preface
+
+The shiny app plots graph against miles per gallon (mpg) for different variables from the mtcars dataset.
+```
+head(mtcars)
+```
+
+
+## Ui.r
+
+```{r echo=TRUE, warning=FALSE, message=FALSE, eval=FALSE}
+library(shiny)
+shinyUI(fluidPage(
+  
+  # Application title
+  titlePanel("Cars Dataset - Miles per Gallon"),
+  
+  sidebarPanel(
+    
+    selectInput("variable", "Variable:", 
+                c("Cylinders" = "cyl",
+                  "Transmission" = "am",
+                  "Gears" = "gear"))
+  ),
+  
+  mainPanel(
+    # Output: Formatted text for caption ----
+    h3(textOutput("caption")),
+    
+    # Output: Plot of the requested variable against mpg ----
+    plotOutput("mpgPlot")
+  )
+))
+```
+
+## Server.r
+
+```{r echo=TRUE, warning=FALSE, message=FALSE, eval=FALSE}
+library(shiny)
+library(plotly)
+mpgData <- mtcars
+mpgData$am <- factor(mpgData$am, labels = c("Automatic", "Manual"))
+shinyServer(function(input, output) {
+  
+  formulaText <- reactive({
+    paste("mpg vs ", input$variable)
+  })
+  
+  output$caption <- renderText({
+    formulaText()
+  })
+  output$mpgPlot <- renderPlot({
+    ggplot(mpgData, aes_string(y=input$variable, x="mpg")) + geom_point()
+  })
+  
+})
+```
+
+
+
